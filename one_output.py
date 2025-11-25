@@ -64,13 +64,13 @@ for idx, service in enumerate(services, 1):
 # Combine all results and save to single files
 if all_daily_forecasts:
     combined_daily = pd.concat(all_daily_forecasts, ignore_index=True)
-    combined_daily.to_csv("all_services_daily_forecasts.csv", index=False)
+    combined_daily.to_csv("daily_forecasts.csv", index=False)
     print(f"\n✓ Saved daily forecasts for all services to: all_services_daily_forecasts.csv")
     print(f"  Total rows: {len(combined_daily)}")
 
 if all_monthly_forecasts:
     combined_monthly = pd.concat(all_monthly_forecasts, ignore_index=True)
-    combined_monthly.to_csv("all_services_monthly_forecasts.csv", index=False)
+    combined_monthly.to_csv("monthly_forecasts.csv", index=False)
     print(f"✓ Saved monthly forecasts for all services to: all_services_monthly_forecasts.csv")
     print(f"  Total rows: {len(combined_monthly)}")
 
