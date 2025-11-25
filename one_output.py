@@ -4,8 +4,11 @@ import matplotlib.pyplot as plt
 from utils import gregorian_to_shamsi, gregorian_to_shamsi_year_month
 import os
 
-data = pd.read_csv('output.csv')
-data['ds'] = pd.to_datetime(data['ds'])
+d = pd.read_csv('output.csv')
+d['ds'] = pd.to_datetime(d['ds'])
+
+target_years = [1401, 1402, 1403]
+data = d[d['Year'].isin(target_years)]
 
 # Get all unique services
 services = data['service'].unique()
@@ -64,13 +67,13 @@ for idx, service in enumerate(services, 1):
 # Combine all results and save to single files
 if all_daily_forecasts:
     combined_daily = pd.concat(all_daily_forecasts, ignore_index=True)
-    combined_daily.to_csv("daily_forecasts.csv", index=False)
+    combined_daily.to_csv("daily_3years_forecasts.csv", index=False)
     print(f"\n✓ Saved daily forecasts for all services to: all_services_daily_forecasts.csv")
     print(f"  Total rows: {len(combined_daily)}")
 
 if all_monthly_forecasts:
     combined_monthly = pd.concat(all_monthly_forecasts, ignore_index=True)
-    combined_monthly.to_csv("monthly_forecasts.csv", index=False)
+    combined_monthly.to_csv("monthly_3years_forecasts.csv", index=False)
     print(f"✓ Saved monthly forecasts for all services to: all_services_monthly_forecasts.csv")
     print(f"  Total rows: {len(combined_monthly)}")
 
