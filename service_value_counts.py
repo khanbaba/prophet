@@ -6,12 +6,14 @@ target_months = ['(1404-02)', '(1404-03)', '(1404-04)', '(1404-05)', '(1404-06)'
 filtered_data = data_monthly[data_monthly['shamsi_year_month'].isin(target_months)]
 
 # Count frequency of each min_diff_label per service
-label_counts = filtered_data.groupby(['service', 'min_diff_label']).size().reset_index(name='count')
+label_counts = filtered_data.groupby(['service', 'min_diff_label']).size().reset_index(name='y_lable_frequent_count')
 
-# Pivot to get one row per service with label counts in separate columns
-pivot_table = label_counts.pivot(index='service', columns='min_diff_label', values='count').fillna(0).astype(int)
+# Get the most frequent min_diff_label for each service
+most_frequent = label_counts.loc[label_counts.groupby('service')['y_lable_frequent_count'].idxmax()]
 
-# Reset index to make service a column
-pivot_table = pivot_table.reset_index()
+# Rename columns to match requirements
+most_frequent = most_frequent.rename(columns={
+    'min_diff_label': 'y_lable_frequent'
+})
 
-pivot_table.to_csv('service_month_value_counts.csv', index=False)
+most_frequent.to_csv('service_month_value_counts.csv', index=False)
