@@ -32,10 +32,20 @@ for idx, service in enumerate(services, 1):
     
     try:
         # Train Prophet model
-        model = Prophet()
+        model = Prophet(
+            yearly_seasonality=True,
+            weekly_seasonality=True,
+            daily_seasonality=False,
+            seasonality_mode='multiplicative',
+            changepoint_prior_scale=0.2,
+            seasonality_prior_scale=10,
+        )
         model.fit(df)
         future = model.make_future_dataframe(periods=365)
         forecast = model.predict(future)
+        if 'حمل بار' in service:
+            fig1 = model.plot(forecast)
+            fig1.savefig(f"plots_{service}_daily.png")
         
         # Merge forecast with original data to include real y values
         result = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].merge(df[['ds', 'y']], on='ds', how='left')
