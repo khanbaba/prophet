@@ -24,6 +24,7 @@ for idx, service in enumerate(services, 1):
     
     # Filter data for this service
     df = data[data['service'] == service][['ds', 'y']].copy()
+    df_with_1404 = d[d['service'] == service][['ds', 'y']].copy()
     
     # Skip if not enough data
     if len(df) < 2:
@@ -43,12 +44,9 @@ for idx, service in enumerate(services, 1):
         model.fit(df)
         future = model.make_future_dataframe(periods=365)
         forecast = model.predict(future)
-        if 'حمل بار' in service:
-            fig1 = model.plot(forecast)
-            fig1.savefig(f"plots_{service}_daily.png")
         
         # Merge forecast with original data to include real y values
-        result = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].merge(df[['ds', 'y']], on='ds', how='left')
+        result = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].merge(df_with_1404[['ds', 'y']], on='ds', how='left')
         result = result[['ds', 'y', 'yhat', 'yhat_lower', 'yhat_upper']]
         
         result['shamsi_ds'] = result['ds'].apply(gregorian_to_shamsi)

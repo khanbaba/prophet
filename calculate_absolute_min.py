@@ -1,7 +1,7 @@
 import pandas as pd
 
 data = pd.read_csv('daily_3years_forecasts_with_category.csv')
-data_monthly = pd.read_csv('monthly_3years_forecasts_updated.csv')
+data_monthly = pd.read_csv('monthly_3years_forecasts_with_category.csv')
 
 # Calculate absolute difference between y and yhat
 data['yhat_diff'] = abs(data['y'] - data['yhat'])
@@ -17,7 +17,7 @@ data['min_diff_label'] = data[['yhat_diff', 'yhat_low_diff', 'yhat_high_diff']].
 data_monthly['min_diff_label'] = data_monthly[['yhat_diff', 'yhat_low_diff', 'yhat_high_diff']].idxmin(axis=1)
 
 data.to_csv('daily_3years_forecasts_with_category_with_min_diff.csv', index=False)
-data_monthly.to_csv('monthly_3years_forecasts_updated_with_min_diff.csv', index=False)
+data_monthly.to_csv('monthly_3years_forecasts_with_category_with_min_diff.csv', index=False)
 
 print(data['min_diff_label'].value_counts())
 print(data_monthly['min_diff_label'].value_counts())

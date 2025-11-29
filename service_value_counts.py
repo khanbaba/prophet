@@ -1,6 +1,6 @@
 import pandas as pd
 
-data_monthly = pd.read_csv('monthly_3years_forecasts_updated_with_min_diff.csv')
+data_monthly = pd.read_csv('monthly_3years_forecasts_with_category_with_min_diff.csv')
 
 target_months = ['(1404-02)', '(1404-03)', '(1404-04)', '(1404-05)', '(1404-06)', '(1404-07)', '(1404-08)']
 filtered_data = data_monthly[data_monthly['shamsi_year_month'].isin(target_months)]
