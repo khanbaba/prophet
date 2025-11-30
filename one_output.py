@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from utils import gregorian_to_shamsi, gregorian_to_shamsi_year_month
 import os
+from sklearn.metrics import mean_absolute_percentage_error
 
 d = pd.read_csv('output.csv')
 d['ds'] = pd.to_datetime(d['ds'])
@@ -37,9 +38,14 @@ for idx, service in enumerate(services, 1):
             yearly_seasonality=True,
             weekly_seasonality=True,
             daily_seasonality=False,
-            seasonality_mode='multiplicative',
+            seasonality_mode='additive',
             changepoint_prior_scale=0.2,
             seasonality_prior_scale=10,
+            holidays_prior_scale=20,
+            interval_width=0.9
+            # seasonality_mode='multiplicative',
+            # changepoint_prior_scale=0.2,
+            # seasonality_prior_scale=10,
         )
         model.fit(df)
         future = model.make_future_dataframe(periods=365)
@@ -82,6 +88,8 @@ if all_daily_forecasts:
 if all_monthly_forecasts:
     combined_monthly = pd.concat(all_monthly_forecasts, ignore_index=True)
     combined_monthly.to_csv("monthly_3years_forecasts.csv", index=False)
+    mape = mean_absolute_percentage_error(combined_monthly["y"], combined_monthly["yhat"]) * 100
+    print(f"mape: {mape}")
     print(f"✓ Saved monthly forecasts for all services to: all_services_monthly_forecasts.csv")
     print(f"  Total rows: {len(combined_monthly)}")
 
