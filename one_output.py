@@ -4,52 +4,47 @@ import matplotlib.pyplot as plt
 from utils import gregorian_to_shamsi, gregorian_to_shamsi_year_month
 import os
 from sklearn.metrics import mean_absolute_percentage_error
+import matplotlib.pyplot as plt
+
 
 d = pd.read_csv('output.csv')
 d['ds'] = pd.to_datetime(d['ds'])
 
 target_years = [1401, 1402, 1403]
-data = d[d['Year'].isin(target_years)]
+# data = d[d['Year'].isin(target_years)]
+data = d[
+    (d['Year'].isin(target_years)) | 
+    ((d['Year'] == 1404) & (d['Month'].isin([1, 2, 3, 4, 5, 6])))
+]
 
-# Get all unique services
-services = data['service'].unique()
-print(f"Found {len(services)} services")
+# Get all unique categorys
+categorys = data['category'].unique()
+print(f"Found {len(categorys)} category")
 
-# Create lists to collect all results
+
+res_mape = []
+
 all_daily_forecasts = []
 all_monthly_forecasts = []
-
-# Loop over each service
-for idx, service in enumerate(services, 1):
-    print(f"\n[{idx}/{len(services)}] Processing service: {service}")
+for idx, category in enumerate(categorys, 1):
+    print(f"\n[{idx}/{len(categorys)}] Processing category: {category}")
     
-    # Filter data for this service
-    df = data[data['service'] == service][['ds', 'y']].copy()
-    df_with_1404 = d[d['service'] == service][['ds', 'y']].copy()
-    
-    # Skip if not enough data
-    if len(df) < 2:
-        print(f"  Skipping {service} - not enough data")
-        continue
+    # Filter data for this category
+    df = data[data['category'] == category][['ds', 'y']].copy()
+    df_with_1404 = d[d['category'] == category][['ds', 'y']].copy()
     
     try:
-        # Train Prophet model
         model = Prophet(
-            yearly_seasonality=True,
-            weekly_seasonality=True,
-            daily_seasonality=False,
-            seasonality_mode='additive',
-            changepoint_prior_scale=0.2,
-            seasonality_prior_scale=10,
-            holidays_prior_scale=20,
-            interval_width=0.9
-            # seasonality_mode='multiplicative',
-            # changepoint_prior_scale=0.2,
-            # seasonality_prior_scale=10,
+            changepoint_prior_scale=0.01
         )
         model.fit(df)
         future = model.make_future_dataframe(periods=365)
         forecast = model.predict(future)
+
+        fig1 = model.plot(forecast)
+        name = f"plots_submitted_0_01/{category}.png"
+        fig1.savefig(name, dpi=300)
+        plt.close(fig1)
         
         # Merge forecast with original data to include real y values
         result = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].merge(df_with_1404[['ds', 'y']], on='ds', how='left')
@@ -57,32 +52,29 @@ for idx, service in enumerate(services, 1):
         
         result['shamsi_ds'] = result['ds'].apply(gregorian_to_shamsi)
         result['shamsi_year_month'] = result['ds'].apply(gregorian_to_shamsi_year_month)
-        result['service'] = service
+        result['category'] = category
         
-        # Add to daily forecasts list
         all_daily_forecasts.append(result)
         
-        # Aggregate by month
         result_aggregated_on_month = (
             result.groupby(["shamsi_year_month"], as_index=False)
-              .agg(y=("y", "sum"), yhat=("yhat", "sum"), yhat_lower=("yhat_lower", "sum"), yhat_upper=("yhat_upper", "sum"))
+            .agg(y=("y", "sum"), yhat=("yhat", "sum"), yhat_lower=("yhat_lower", "sum"), yhat_upper=("yhat_upper", "sum"))
         )
-        result_aggregated_on_month['service'] = service
+        result_aggregated_on_month['category'] = category
         
-        # Add to monthly forecasts list
         all_monthly_forecasts.append(result_aggregated_on_month)
         
-        print(f"  ✓ Completed {service}")
         
     except Exception as e:
-        print(f"  ✗ Error processing {service}: {str(e)}")
+        print(f"  ✗ Error processing {category}: {str(e)}")
         continue
+
 
 # Combine all results and save to single files
 if all_daily_forecasts:
     combined_daily = pd.concat(all_daily_forecasts, ignore_index=True)
     combined_daily.to_csv("daily_3years_forecasts.csv", index=False)
-    print(f"\n✓ Saved daily forecasts for all services to: all_services_daily_forecasts.csv")
+    print(f"\n✓ Saved daily forecasts for all categorys to: all_categorys_daily_forecasts.csv")
     print(f"  Total rows: {len(combined_daily)}")
 
 if all_monthly_forecasts:
@@ -90,8 +82,8 @@ if all_monthly_forecasts:
     combined_monthly.to_csv("monthly_3years_forecasts.csv", index=False)
     mape = mean_absolute_percentage_error(combined_monthly["y"], combined_monthly["yhat"]) * 100
     print(f"mape: {mape}")
-    print(f"✓ Saved monthly forecasts for all services to: all_services_monthly_forecasts.csv")
+    print(f"✓ Saved monthly forecasts for all categorys to: all_categorys_monthly_forecasts.csv")
     print(f"  Total rows: {len(combined_monthly)}")
 
 print("\n" + "="*50)
-print("All services processed successfully!")
+print("All categorys processed successfully!")
