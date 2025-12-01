@@ -34,15 +34,13 @@ for idx, category in enumerate(categorys, 1):
     df_with_1404 = d[d['category'] == category][['ds', 'y']].copy()
     
     try:
-        model = Prophet(
-            changepoint_prior_scale=0.01
-        )
+        model = Prophet()
         model.fit(df)
         future = model.make_future_dataframe(periods=365)
         forecast = model.predict(future)
 
         fig1 = model.plot(forecast)
-        name = f"plots_done_0_01/{category}.png"
+        name = f"plots_submitted_0_01/{category}.png"
         fig1.savefig(name, dpi=300)
         plt.close(fig1)
         
