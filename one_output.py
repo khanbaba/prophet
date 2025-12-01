@@ -42,7 +42,7 @@ for idx, category in enumerate(categorys, 1):
         forecast = model.predict(future)
 
         fig1 = model.plot(forecast)
-        name = f"plots_submitted_0_01/{category}.png"
+        name = f"plots_done_0_01/{category}.png"
         fig1.savefig(name, dpi=300)
         plt.close(fig1)
         
